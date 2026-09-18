@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email Screenshot Tool</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    line-height: 1.5;
+    background: #faf9f5;
+    color: #141413;
+  }
+  .brand {
+    display: block;
+    margin-bottom: 28px;
+    width: fit-content;
+  }
+  .brand img { height: 26px; width: auto; display: block; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  p.sub { color: #666; margin-top: 0; margin-bottom: 32px; }
+  footer.credit {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+  }
+  footer.credit a { color: #999; text-decoration: underline; }
+  .card {
+    background: #fff;
+    border: 1px solid #e2e2e2;
+    border-radius: 10px;
+    padding: 24px;
+  }
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    background: #f2f2f2;
+  }
+  .tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+  input[type="url"], input[type="file"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    background: #1a1a1a;
+    color: #fff;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .status { margin-top: 16px; font-size: 13px; color: #666; min-height: 18px; }
+  .error { color: #b3261e; }
+  .results {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .result {
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+  }
+  .result a {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #1a1a1a;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid #1a1a1a;
+    border-radius: 6px;
+    padding: 8px;
+  }
+  .result a:hover { background: #1a1a1a; color: #fff; }
+  #downloadAll {
+    display: none;
+    box-sizing: border-box;
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 8px;
+    background: #fff;
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+  }
+  #downloadAll:hover { background: #1a1a1a; color: #fff; }
+</style>
+</head>
+<body>
+  <a class="brand" href="https://emailboutique.io" target="_blank" rel="noopener">
+    <img src="/logo.svg" alt="EmailBoutique">
+  </a>
+  <h1>Email Screenshot Tool</h1>
+  <p class="sub">Paste a rendered email's URL, or upload its HTML. Get desktop &amp; mobile, light &amp; dark — full page, one click.</p>
+
+  <div class="card">
+    <div class="tabs">
+      <div class="tab active" data-tab="url">Paste a URL</div>
+      <div class="tab" data-tab="file">Upload HTML</div>
+    </div>
+
+    <form id="form">
+      <div class="panel active" data-panel="url">
+        <input type="url" name="url" placeholder="https://example.com/your-rendered-email.html">
+      </div>
+      <div class="panel" data-panel="file">
+        <input type="file" name="htmlFile" accept=".html,.htm,text/html">
+      </div>
+      <button type="submit">Generate screenshots</button>
+    </form>
+
+    <div class="status" id="status"></div>
+    <a id="downloadAll" href="#" download>Download all (.zip)</a>
+    <div class="results" id="results"></div>
+  </div>
+
+  <footer class="credit">
+    Built by <a href="https://emailboutique.io" target="_blank" rel="noopener">EmailBoutique Digital Inc.</a> — provided as-is, no warranty.
+    <a href="https://github.com/Annett/email-screenshot-tool" target="_blank" rel="noopener">Check GitHub for updates</a>.
+  </footer>
+
+  <script>
+    const tabs = document.querySelectorAll(".tab");
+    const panels = document.querySelectorAll(".panel");
+    tabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        tabs.forEach((t) => t.classList.remove("active"));
+        panels.forEach((p) => p.classList.remove("active"));
+        tab.classList.add("active");
+        document.querySelector(`.panel[data-panel="${tab.dataset.tab}"]`).classList.add("active");
+      });
+    });
+
+    const form = document.getElementById("form");
+    const statusEl = document.getElementById("status");
+    const resultsEl = document.getElementById("results");
+    const downloadAllEl = document.getElementById("downloadAll");
+    const submitBtn = form.querySelector("button");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      resultsEl.innerHTML = "";
+      downloadAllEl.style.display = "none";
+      statusEl.textContent = "Rendering all four versions — this takes a few seconds…";
+      statusEl.classList.remove("error");
+      submitBtn.disabled = true;
+
+      const formData = new FormData(form);
+      const activeTab = document.querySelector(".tab.active").dataset.tab;
+      if (activeTab === "url") formData.delete("htmlFile");
+      else formData.delete("url");
+
+      try {
+        const res = await fetch("/generate", { method: "POST", body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Something went wrong.");
+
+        statusEl.textContent = "Done.";
+        for (const key of Object.keys(data.images)) {
+          const { label, href } = data.images[key];
+          const div = document.createElement("div");
+          div.className = "result";
+          div.innerHTML = `<img src="${href}" style="max-width:100%; max-height:120px; object-fit:contain;">
+            <a href="${href}" download>${label}</a>`;
+          resultsEl.appendChild(div);
+        }
+        downloadAllEl.href = `/download-all/${data.jobId}`;
+        downloadAllEl.style.display = "block";
+      } catch (err) {
+        statusEl.textContent = err.message;
+        statusEl.classList.add("error");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

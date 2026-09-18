@@ -1,0 +1,16 @@
+{
+  "name": "email-screenshot-tool",
+  "version": "1.0.0",
+  "description": "Paste an email's URL or upload its HTML and download desktop/mobile, light/dark screenshots in one click.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "express": "^4.19.2",
+    "multer": "^2.0.0",
+    "puppeteer": "^25.0.0"
+  }
+}
