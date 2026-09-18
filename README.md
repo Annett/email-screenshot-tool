@@ -9,7 +9,7 @@ screenshots in one click: desktop/mobile × light/dark mode. No scrolling, no
 manual stitching, no DevTools required — great for building out a portfolio
 or case study fast.
 
-![The tool's main screen](docs/tool-empty-state.png)
+![The tool's main screen](docs/tool-file-selected.png)
 
 ## How it works
 
@@ -31,25 +31,8 @@ The server (`server.js`) drives a real headless Chrome via
 That's four screenshots — desktop/light, desktop/dark, mobile/light,
 mobile/dark — defined in the `VARIANTS` array at the top of `server.js`.
 
-### Upload flow, end to end
-
-![Selecting a file to upload](docs/tool-file-selected.png)
-
-Click **Generate screenshots** and the four variants render in a few
-seconds:
-
-![Four screenshots generated, with individual and zip download options](docs/tool-results.png)
-
 Each thumbnail is a real downloadable PNG, and **Download all (.zip)**
 bundles all four into one file via [archiver](https://www.npmjs.com/package/archiver).
-
-### Example output
-
-Real output from the tool, same source HTML, light vs. dark:
-
-| Desktop · Light | Desktop · Dark |
-|---|---|
-| ![Desktop light mode example](docs/example-desktop-light.png) | ![Desktop dark mode example](docs/example-desktop-dark.png) |
 
 ## API
 
